@@ -1,0 +1,44 @@
+package main
+
+import "fmt"
+
+templ home(todos []Todo) {
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <title>Templ HTMX</title>
+      <style>
+        .done {
+          text-decoration: line-through;
+        }
+      </style>
+      <script src="https://unpkg.com/htmx.org@2.0.3"></script>
+    </head>
+    <body>
+      <h1>ToDo list</h1>
+
+      <form hx-post="/todos" hx-target="#todo-list" hx-swap="beforeend" hx-on::after-request="this.reset()">
+        <input type="text" name="text" placeholder="New ToDo..." required />
+        <button type="submit">Add</button>
+      </form>
+
+      <div id="todo-list">
+        @todoList(todos)
+      </div>
+    </body>
+  </html>
+}
+
+templ todoList(todos []Todo) {
+  for _, todo := range todos {
+    @todoItem(todo)
+  }
+}
+
+templ todoItem(todo Todo) {
+  <div class={ "todo-item", templ.KV("done", todo.Done) } hx-target="this" hx-swap="outerHTML">
+    <span hx-post={ fmt.Sprintf("/toggle/%d", todo.ID) } style="cursor: pointer;">
+      {todo.Text}
+    </span>
+  </div>
+}
